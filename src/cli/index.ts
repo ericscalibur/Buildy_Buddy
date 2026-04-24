@@ -6,6 +6,7 @@ import { registerCronCommand } from './commands/cron.js';
 import { registerStatusCommand } from './commands/status.js';
 import { registerStartCommand } from './commands/start.js';
 import { registerDoctorCommand } from './commands/doctor.js';
+import { registerTestCommand } from './commands/test.js';
 
 const program = new Command();
 
@@ -25,5 +26,6 @@ registerCronCommand(program);
 registerStatusCommand(program);
 registerStartCommand(program);
 registerDoctorCommand(program);
+registerTestCommand(program);
 
 program.parse();
