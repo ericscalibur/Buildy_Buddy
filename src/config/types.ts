@@ -36,6 +36,7 @@ export interface OpenClawConfig {
   agents: AgentsConfig;
   bindings?: BindingConfig[];
   channels?: { whatsapp?: WhatsAppChannelConfig };
+  adminNumber?: string;
   cron?: {
     enabled: boolean;
     maxConcurrentRuns: number;

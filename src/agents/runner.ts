@@ -2,7 +2,9 @@ import {
   loadAgentSystemPrompt,
   loadMessageBuffer,
   clearMessageBuffer,
+  OPENCLAW_DIR,
 } from '../config/loader.js';
+import { join } from 'path';
 import type { OpenClawConfig, CronJob } from '../config/types.js';
 
 export async function runDigestAgent(job: CronJob, config: OpenClawConfig): Promise<string> {
@@ -41,6 +43,11 @@ export async function runDigestAgent(job: CronJob, config: OpenClawConfig): Prom
   }
 
   return text;
+}
+
+export async function runDmAgent(userMessage: string, config: OpenClawConfig): Promise<string> {
+  const systemPrompt = await loadAgentSystemPrompt(join(OPENCLAW_DIR, 'workspace-digest'));
+  return callOllama(config.model, systemPrompt, userMessage);
 }
 
 async function callOllama(model: string, system: string, user: string): Promise<string> {
