@@ -4,7 +4,7 @@ import { homedir } from 'os';
 import type { OpenClawConfig, CronJob, BufferedMessage } from './types.js';
 
 export const OPENCLAW_DIR = join(homedir(), '.openclaw');
-export const CONFIG_FILE = join(OPENCLAW_DIR, 'openclaw.json');
+export const CONFIG_FILE = join(OPENCLAW_DIR, 'digest-bot.json');
 export const CRONS_FILE = join(OPENCLAW_DIR, 'crons.json');
 export const BUFFERS_DIR = join(OPENCLAW_DIR, 'buffers');
 export const CREDENTIALS_DIR = join(OPENCLAW_DIR, 'credentials');
