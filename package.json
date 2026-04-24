@@ -1,0 +1,32 @@
+{
+  "name": "openclaw",
+  "version": "0.1.0",
+  "description": "WhatsApp group digest bot gateway",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "openclaw": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "cli": "node dist/cli/index.js",
+    "dev": "tsx src/index.ts",
+    "dev:cli": "tsx src/cli/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.18",
+    "commander": "^12.1.0",
+    "node-cron": "^3.0.3",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/qrcode-terminal": "^0.12.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
