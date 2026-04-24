@@ -47,7 +47,8 @@ export async function runDigestAgent(job: CronJob, config: OpenClawConfig): Prom
 
 export async function runDmAgent(userMessage: string, config: OpenClawConfig): Promise<string> {
   const systemPrompt = await loadAgentSystemPrompt(join(OPENCLAW_DIR, 'workspace-digest'));
-  return callOllama(config.model, systemPrompt, userMessage);
+  const prompt = `[This message is from the admin. Respond helpfully — do NOT return NO_REPLY.]\n\n${userMessage}`;
+  return callOllama(config.model, systemPrompt, prompt);
 }
 
 async function callOllama(model: string, system: string, user: string): Promise<string> {
