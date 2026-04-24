@@ -76,6 +76,10 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    console.log(`[whatsapp] messages.upsert type=${type} count=${messages.length}`);
+    for (const m of messages) {
+      console.log(`[whatsapp] msg jid=${m.key.remoteJid} fromMe=${m.key.fromMe} hasMessage=${!!m.message}`);
+    }
     if (type !== 'notify') return;
 
     const config = await loadConfig();
