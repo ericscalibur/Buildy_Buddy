@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "openclaw": "./dist/cli/index.js"
+    "buildy": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",

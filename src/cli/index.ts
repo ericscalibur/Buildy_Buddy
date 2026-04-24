@@ -11,7 +11,7 @@ import { registerTestCommand } from './commands/test.js';
 const program = new Command();
 
 program
-  .name('openclaw')
+  .name('buildy')
   .description('WhatsApp group digest bot gateway')
   .version('0.1.0');
 
