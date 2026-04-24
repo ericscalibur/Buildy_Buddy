@@ -25,6 +25,13 @@ registerChannelsCommand(program);
 registerCronCommand(program);
 registerStatusCommand(program);
 registerStartCommand(program);
+
+// alias: openclaw gateway start
+const gateway = program.command('gateway').description('Gateway commands');
+gateway.command('start').description('Start the OpenClaw gateway').action(async () => {
+  const { startGateway } = await import('../gateway.js');
+  await startGateway();
+});
 registerDoctorCommand(program);
 registerTestCommand(program);
 
