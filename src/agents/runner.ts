@@ -36,7 +36,8 @@ export async function runDigestAgent(job: CronJob, config: OpenClawConfig): Prom
     contextBlock += 'No messages today.';
   }
 
-  const text = await callOllama(config.model, systemPrompt, job.message + contextBlock);
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const text = await callOllama(config.model, systemPrompt, `Today is ${today}.\n\n${job.message}${contextBlock}`);
 
   if (job.session === 'isolated') {
     await clearMessageBuffer(groupJid);
