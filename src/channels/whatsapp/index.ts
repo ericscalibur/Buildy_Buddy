@@ -113,12 +113,18 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
         continue;
       }
 
-      // DM — only respond to admin
-      const senderNumber = '+' + jid.replace('@s.whatsapp.net', '').replace(/\D/g, '');
-      const adminNumber = config.adminNumber?.replace(/\D/g, '');
-      if (!adminNumber || !senderNumber.includes(adminNumber)) continue;
+      // DM — must be @s.whatsapp.net or @lid (newer WA privacy format)
+      const isDm = jid.endsWith('@s.whatsapp.net') || jid.endsWith('@lid');
+      if (!isDm) continue;
 
-      console.log(`[whatsapp] admin DM from ${senderNumber}: ${body}`);
+      // For @s.whatsapp.net we can verify the number; @lid is opaque so we trust it
+      if (jid.endsWith('@s.whatsapp.net')) {
+        const senderNumber = jid.replace('@s.whatsapp.net', '').replace(/\D/g, '');
+        const adminNumber = config.adminNumber?.replace(/\D/g, '');
+        if (adminNumber && !senderNumber.includes(adminNumber)) continue;
+      }
+
+      console.log(`[whatsapp] admin DM from ${jid}: ${body}`);
 
       // Run agent with the DM content
       try {
