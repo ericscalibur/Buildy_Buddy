@@ -14,7 +14,7 @@ export const RUN_HISTORY_DIR = join(OPENCLAW_DIR, 'run-history');
 
 export const DEFAULT_CONFIG: OpenClawConfig = {
   provider: 'ollama',
-  model: 'llama3.2',
+  model: 'gemma4:e4b',
   agents: {
     default: 'main',
     list: [
