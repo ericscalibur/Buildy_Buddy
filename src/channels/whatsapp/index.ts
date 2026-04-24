@@ -128,10 +128,13 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
 
       // Run agent with the DM content
       try {
+        console.log('[whatsapp] calling DM agent...');
         const { runDmAgent } = await import('../../agents/runner.js');
         const reply = await runDmAgent(body, config);
+        console.log('[whatsapp] agent reply:', reply?.slice(0, 80));
         if (reply && reply.trim() !== 'NO_REPLY') {
           await sock!.sendMessage(jid, { text: reply });
+          console.log('[whatsapp] reply sent');
         }
       } catch (err) {
         console.error('[whatsapp] DM agent error:', err);
