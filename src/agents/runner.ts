@@ -1,12 +1,9 @@
-import Anthropic from '@anthropic-ai/sdk';
 import {
   loadAgentSystemPrompt,
   loadMessageBuffer,
   clearMessageBuffer,
 } from '../config/loader.js';
 import type { OpenClawConfig, CronJob } from '../config/types.js';
-
-const client = new Anthropic();
 
 export async function runDigestAgent(job: CronJob, config: OpenClawConfig): Promise<string> {
   const agentId = job.agentId ?? 'digest';
@@ -37,21 +34,77 @@ export async function runDigestAgent(job: CronJob, config: OpenClawConfig): Prom
     contextBlock += 'No messages today.';
   }
 
-  const response = await client.messages.create({
-    model: config.model,
-    max_tokens: 1024,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: job.message + contextBlock }],
-  });
-
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('');
+  const userMessage = job.message + contextBlock;
+  const text = await callLLM(config, systemPrompt, userMessage);
 
   if (job.session === 'isolated') {
     await clearMessageBuffer(groupJid);
   }
 
   return text;
+}
+
+async function callLLM(
+  config: OpenClawConfig,
+  systemPrompt: string,
+  userMessage: string
+): Promise<string> {
+  if (config.provider === 'ollama') {
+    return callOllama(config.model, systemPrompt, userMessage);
+  }
+  if (config.provider === 'anthropic') {
+    return callAnthropic(config.model, systemPrompt, userMessage);
+  }
+  if (config.provider === 'openai') {
+    return callOpenAI(config.model, systemPrompt, userMessage);
+  }
+  throw new Error(`Unknown provider: ${config.provider}`);
+}
+
+async function callOllama(model: string, system: string, user: string): Promise<string> {
+  const res = await fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      stream: false,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error(`Ollama error: ${res.status} ${await res.text()}`);
+  const data = (await res.json()) as { message: { content: string } };
+  return data.message.content;
+}
+
+async function callAnthropic(model: string, system: string, user: string): Promise<string> {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+  const client = new Anthropic();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response = await (client as any).messages.create({
+    model,
+    max_tokens: 1024,
+    system,
+    messages: [{ role: 'user', content: user }],
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (response.content as any[])
+    .filter((b) => b.type === 'text')
+    .map((b) => b.text as string)
+    .join('');
+}
+
+async function callOpenAI(model: string, system: string, user: string): Promise<string> {
+  const { default: OpenAI } = await import('openai');
+  const client = new OpenAI();
+  const response = await client.chat.completions.create({
+    model,
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+  });
+  return response.choices[0]?.message?.content ?? '';
 }

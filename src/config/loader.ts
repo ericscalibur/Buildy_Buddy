@@ -13,8 +13,8 @@ export const PID_FILE = join(OPENCLAW_DIR, 'gateway.pid');
 export const RUN_HISTORY_DIR = join(OPENCLAW_DIR, 'run-history');
 
 export const DEFAULT_CONFIG: OpenClawConfig = {
-  provider: 'anthropic',
-  model: 'claude-sonnet-4-6',
+  provider: 'ollama',
+  model: 'llama3.2',
   agents: {
     default: 'main',
     list: [

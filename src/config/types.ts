@@ -31,7 +31,7 @@ export interface WhatsAppChannelConfig {
 }
 
 export interface OpenClawConfig {
-  provider: 'anthropic' | 'openai';
+  provider: 'anthropic' | 'openai' | 'ollama';
   model: string;
   agents: AgentsConfig;
   bindings?: BindingConfig[];
