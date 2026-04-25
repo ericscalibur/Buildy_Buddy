@@ -121,7 +121,7 @@ export async function runOnboard(options: { installDaemon?: boolean }) {
 
 function installLaunchdDaemon() {
   const home = process.env.HOME!;
-  const plistPath = join(home, 'Library/LaunchAgents/com.openclaw.gateway.plist');
+  const plistPath = join(home, 'Library/LaunchAgents/com.buildy.gateway.plist');
   const nodeBin = process.execPath;
   const scriptPath = fileURLToPath(new URL('../../../dist/index.js', import.meta.url));
   const logOut = join(home, '.openclaw/logs/gateway.log');
@@ -132,7 +132,7 @@ function installLaunchdDaemon() {
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.openclaw.gateway</string>
+  <string>com.buildy.gateway</string>
   <key>ProgramArguments</key>
   <array>
     <string>${nodeBin}</string>
