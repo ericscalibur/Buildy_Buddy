@@ -1,4 +1,5 @@
 import { access, writeFile } from 'fs/promises';
+import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
@@ -111,13 +112,11 @@ export async function runOnboard(options: { installDaemon?: boolean }) {
 
   console.log('\nSetup complete!');
   console.log('Next steps:');
-  console.log('  1. Set ANTHROPIC_API_KEY in your environment');
-  console.log('  2. openclaw channels login whatsapp');
-  console.log('  3. openclaw channels groups whatsapp');
-  console.log('  4. Edit ~/.openclaw/openclaw.json with your group JID');
-  console.log('  5. openclaw cron add --name daily-digest --cron "0 20 * * *" --tz America/New_York \\');
-  console.log('       --message "Time for the daily digest..." --announce --channel whatsapp --to "group:YOUR_JID"');
-  console.log('  6. openclaw start');
+  console.log('  1. buildy channels login whatsapp');
+  console.log('  2. buildy channels groups whatsapp');
+  console.log('  3. Edit ~/.openclaw/digest-bot.json with your group JID');
+  console.log('  4. buildy cron add --name daily-digest ...');
+  console.log('  5. buildy gateway start');
 }
 
 function installLaunchdDaemon() {
@@ -150,7 +149,7 @@ function installLaunchdDaemon() {
 </dict>
 </plist>`;
 
-  require('fs').writeFileSync(plistPath, plist);
+  writeFileSync(plistPath, plist);
   execSync(`launchctl load "${plistPath}"`);
   console.log('Installed launchd daemon:', plistPath);
 }

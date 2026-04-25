@@ -76,10 +76,6 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
   });
 
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    console.log(`[whatsapp] messages.upsert type=${type} count=${messages.length}`);
-    for (const m of messages) {
-      console.log(`[whatsapp] msg jid=${m.key.remoteJid} fromMe=${m.key.fromMe} hasMessage=${!!m.message}`);
-    }
     if (type !== 'notify') return;
 
     const config = await loadConfig();
@@ -90,7 +86,9 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
       if (!msg.message || msg.key.fromMe) continue;
 
       const jid = msg.key.remoteJid;
-      if (!jid) continue;
+      if (!jid?.endsWith('@g.us')) continue;
+
+      if (waConfig.groupPolicy === 'allowlist' && !waConfig.groupAllowFrom?.includes(jid)) continue;
 
       const body =
         msg.message?.conversation ||
@@ -99,46 +97,13 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
         '';
       if (!body) continue;
 
-      // Group message — buffer it
-      if (jid.endsWith('@g.us')) {
-        if (waConfig.groupPolicy === 'allowlist' && !waConfig.groupAllowFrom?.includes(jid)) continue;
-
-        const buffered: BufferedMessage = {
-          from: msg.key.participant || jid,
-          pushName: msg.pushName ?? undefined,
-          body,
-          timestamp: (msg.messageTimestamp as number) * 1000,
-        };
-        await appendToBuffer(jid, buffered, waConfig.historyBuffer ?? 200);
-        continue;
-      }
-
-      // DM — must be @s.whatsapp.net or @lid (newer WA privacy format)
-      const isDm = jid.endsWith('@s.whatsapp.net') || jid.endsWith('@lid');
-      if (!isDm) continue;
-
-      // For @s.whatsapp.net we can verify the number; @lid is opaque so we trust it
-      if (jid.endsWith('@s.whatsapp.net')) {
-        const senderNumber = jid.replace('@s.whatsapp.net', '').replace(/\D/g, '');
-        const adminNumber = config.adminNumber?.replace(/\D/g, '');
-        if (adminNumber && !senderNumber.includes(adminNumber)) continue;
-      }
-
-      console.log(`[whatsapp] admin DM from ${jid}: ${body}`);
-
-      // Run agent with the DM content
-      try {
-        console.log('[whatsapp] calling DM agent...');
-        const { runDmAgent } = await import('../../agents/runner.js');
-        const reply = await runDmAgent(body, config);
-        console.log('[whatsapp] agent reply:', reply?.slice(0, 80));
-        if (reply && reply.trim() !== 'NO_REPLY') {
-          await sock!.sendMessage(jid, { text: reply });
-          console.log('[whatsapp] reply sent');
-        }
-      } catch (err) {
-        console.error('[whatsapp] DM agent error:', err);
-      }
+      const buffered: BufferedMessage = {
+        from: msg.key.participant || jid,
+        pushName: msg.pushName ?? undefined,
+        body,
+        timestamp: (msg.messageTimestamp as number) * 1000,
+      };
+      await appendToBuffer(jid, buffered, waConfig.historyBuffer ?? 200);
     }
   });
 }
