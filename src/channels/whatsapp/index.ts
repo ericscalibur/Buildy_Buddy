@@ -86,9 +86,7 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
       if (!msg.message || msg.key.fromMe) continue;
 
       const jid = msg.key.remoteJid;
-      if (!jid?.endsWith('@g.us')) continue;
-
-      if (waConfig.groupPolicy === 'allowlist' && !waConfig.groupAllowFrom?.includes(jid)) continue;
+      if (!jid) continue;
 
       const body =
         msg.message?.conversation ||
@@ -97,13 +95,39 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
         '';
       if (!body) continue;
 
-      const buffered: BufferedMessage = {
-        from: msg.key.participant || jid,
-        pushName: msg.pushName ?? undefined,
-        body,
-        timestamp: (msg.messageTimestamp as number) * 1000,
-      };
-      await appendToBuffer(jid, buffered, waConfig.historyBuffer ?? 200);
+      // Group message — buffer it
+      if (jid.endsWith('@g.us')) {
+        if (waConfig.groupPolicy === 'allowlist' && !waConfig.groupAllowFrom?.includes(jid)) continue;
+        const buffered: BufferedMessage = {
+          from: msg.key.participant || jid,
+          pushName: msg.pushName ?? undefined,
+          body,
+          timestamp: (msg.messageTimestamp as number) * 1000,
+        };
+        await appendToBuffer(jid, buffered, waConfig.historyBuffer ?? 200);
+        continue;
+      }
+
+      // DM — @s.whatsapp.net or @lid (newer WA privacy format)
+      const isDm = jid.endsWith('@s.whatsapp.net') || jid.endsWith('@lid');
+      if (!isDm) continue;
+
+      // For @s.whatsapp.net verify against adminNumber; @lid is opaque so we trust it
+      if (jid.endsWith('@s.whatsapp.net')) {
+        const senderNumber = jid.replace('@s.whatsapp.net', '').replace(/\D/g, '');
+        const adminNumber = config.adminNumber?.replace(/\D/g, '');
+        if (adminNumber && !senderNumber.includes(adminNumber)) continue;
+      }
+
+      try {
+        const { runDmAgent } = await import('../../agents/runner.js');
+        const reply = await runDmAgent(body, config);
+        if (reply && reply.trim() !== 'NO_REPLY') {
+          await sock!.sendMessage(jid, { text: reply });
+        }
+      } catch (err) {
+        console.error('[whatsapp] DM agent error:', err);
+      }
     }
   });
 }
