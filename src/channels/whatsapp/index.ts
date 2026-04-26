@@ -67,6 +67,11 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
         (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
       if (shouldReconnect) {
         setTimeout(() => connect(onQR), 5000);
+        fetch('https://ntfy.sh/buildy-bies-alert', {
+          method: 'POST',
+          body: 'Buildy WhatsApp disconnected — messages will not be buffered until reconnected.',
+          headers: { Title: 'Buildy Alert', Priority: 'urgent', Tags: 'warning' },
+        }).catch(() => {});
       }
     } else if (connection === 'open') {
       status = 'connected';
