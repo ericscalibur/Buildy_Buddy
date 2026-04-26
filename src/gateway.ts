@@ -21,5 +21,10 @@ export async function startGateway() {
 async function cleanup() {
   console.log('\nShutting down...');
   try { await unlink(PID_FILE); } catch {}
-  process.exit(0);
+  fetch('https://ntfy.sh/buildy-bies-alert', {
+    method: 'POST',
+    body: 'Buildy gateway stopped — no digest will run until restarted.',
+    headers: { Title: 'Buildy Alert', Priority: 'urgent', Tags: 'stop' },
+  }).catch(() => {});
+  setTimeout(() => process.exit(0), 500);
 }
