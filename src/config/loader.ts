@@ -117,6 +117,10 @@ export async function saveMessageBuffer(groupJid: string, messages: BufferedMess
 export async function appendToBuffer(groupJid: string, msg: BufferedMessage, maxSize: number) {
   let buf = await loadMessageBuffer(groupJid);
   buf.push(msg);
+  // Prune messages older than 24 hours
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  buf = buf.filter((m) => m.timestamp >= cutoff);
+  // Also enforce count limit
   if (buf.length > maxSize) buf = buf.slice(buf.length - maxSize);
   await saveMessageBuffer(groupJid, buf);
 }
