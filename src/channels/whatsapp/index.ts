@@ -74,9 +74,17 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
         }).catch(() => {});
       }
     } else if (connection === 'open') {
+      const wasReconnect = status === 'disconnected';
       status = 'connected';
       qrCode = null;
       console.log('[whatsapp] connected');
+      if (wasReconnect) {
+        fetch('https://ntfy.sh/buildy-bies-alert', {
+          method: 'POST',
+          body: 'Buildy WhatsApp reconnected — all good.',
+          headers: { Title: 'Buildy Alert', Priority: 'default', Tags: 'white_check_mark' },
+        }).catch(() => {});
+      }
     }
   });
 
