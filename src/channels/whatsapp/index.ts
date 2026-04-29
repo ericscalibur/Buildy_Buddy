@@ -28,6 +28,7 @@ const silentLogger = {
 let sock: WASocket | null = null;
 let status: ConnectionStatus = 'disconnected';
 let qrCode: string | null = null;
+let hasConnectedBefore = false;
 
 export const getConnectionStatus = (): ConnectionStatus => status;
 export const getQrCode = (): string | null => qrCode;
@@ -74,7 +75,8 @@ export async function connect(onQR?: (qr: string) => void): Promise<void> {
         }).catch(() => {});
       }
     } else if (connection === 'open') {
-      const wasReconnect = status === 'disconnected';
+      const wasReconnect = hasConnectedBefore;
+      hasConnectedBefore = true;
       status = 'connected';
       qrCode = null;
       console.log('[whatsapp] connected');
